@@ -1,12 +1,16 @@
 import matplotlib.pyplot as plt
 import random as rng
+import matplotlib.colors as colors
 
-def plot_attr_map(attr_dim, ax, cmap="RdBu_r"):
+def plot_attr_map(attr_dim, ax, cmap:str="RdBu_r", norm:str=None,):
     """
         Plot attribution map of a dimension
     """
-    im = ax.imshow(attr_dim, cmap=cmap, vmin=0, vmax=255)
-    ax.set_title("Attribution map")
+    if norm == "log":
+        im = ax.imshow(attr_dim, cmap=cmap, norm=colors.LogNorm())
+    else:
+        im = ax.imshow(attr_dim, cmap=cmap, vmin=1, vmax=255)
+    return im
 
 
 def plot_attribution_hist(attr_arr):
