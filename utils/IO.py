@@ -2,21 +2,34 @@ import numpy as np
 import os
 from pathlib import Path
 
+
 # functions to read attribution and format attribution matrix
-def read_attr(DATE, TIME, CHANNEL, W, MODEL, attribution_root:Path, figure_log_root:Path):
+def read_attr(DATE, TIME, CHANNEL, W, MODEL, attribution_root:Path, figure_log_root:Path, method_dir:str):
     """
     READ Attrbution of shape [C, W, H]
     """
     file_path = f"{DATE}_berlin_9ch{TIME}-saliency-target-channel{CHANNEL}-W{W}.npy"
     log_root = attribution_root / f"{MODEL}" / f"{DATE}_{TIME}"
     if not os.path.exists(log_root / file_path):
+        return None, log_root/file_path
+
+    try:
+        attr = np.load(log_root / file_path)[0]
+        figure_log_path = figure_log_root / f"{MODEL}" / f"{DATE}_{TIME}" / method_dir
+        if not os.path.exists(figure_log_path):
+            os.makedirs(figure_log_path)
+        return attr, figure_log_path
+    except:
+        print(f"{error_message('Error when reading', log_root/file_path)}")
         return None, None
 
-    attr = np.load(log_root / file_path)[0]
-    figure_log_path = figure_log_root / f"{MODEL}" / f"{DATE}_{TIME}" / "watershed"
-    if not os.path.exists(figure_log_path):
-        os.makedirs(figure_log_path)
-    return attr, figure_log_path
+
+def error_message(s1, s2):
+    return f"{color_print_text(s1, 0, 255, 255)}: {color_print_text(s2)}"
+
+
+def color_print_text(text, r=255, g=0, b=0):
+    return "\033[38;2;{};{};{}m{} \033[38;2;255;255;255m".format(r, g, b, text)
 
 
 def get_space_mat(attr):
@@ -64,3 +77,13 @@ def log_scale(arr):
     arr_ = (arr_ - np.min(arr_)) / (np.max(arr_) - np.min(arr_)) * 255
     arr_ = np.round(arr_, 0).astype("uint8")
     return arr_
+
+
+def read_filtering_result(figure_log_root, DATE, TIME, CHANNEL, W, MODEL, method = "watershed"):
+    filename = f"{DATE}_{TIME}_C{CHANNEL}-W{W}.npy"
+    filepath = figure_log_root / f"{MODEL}" / f"{DATE}_{TIME}" / method / filename
+    if os.path.exists(filepath):
+        arr = np.load(filepath)
+        return arr
+    else:
+        return None
