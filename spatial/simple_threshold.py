@@ -59,15 +59,15 @@ def main(MODEL, DATE, TIME, CHANNEL, W,
         plot_attr_map(channel, ax, cmap)
 
         # Save plot
-        if save_visualize != None:
+        if save_visualize:
             plt.savefig(figure_log_path / f"{filename}.png", bbox_inches='tight')
             plt.close(fig)
         del fig, ax
 
-    if save_pickle != None:
+    if save_pickle:
         import pickle
         channel = norm_space_mat[..., channel_of_interest]
-        channel[channel < threshold] = -99
+        channel[channel < threshold] = 0
         np.save(figure_log_path / filename, channel)
 
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
     a.add_argument('--figure_log_root',
                    default='/cluster/scratch/jingyli/interpretable/data_intermediate/visualization', type=str,
                    help='root path to save figures')
-    a.add_argument('--quantile', default=0.995, type=float,
+    a.add_argument('--quantile', default=0.99, type=float,
                    help='quantile as threshold to filter out hotspots')
     a.add_argument('--channel_of_interest', default=11, type=int,
                    help='which feature to be conducted watershed [0,18]')

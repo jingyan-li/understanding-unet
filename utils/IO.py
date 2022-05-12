@@ -1,7 +1,7 @@
 import numpy as np
 import os
 from pathlib import Path
-
+import pickle
 
 # functions to read attribution and format attribution matrix
 def read_attr(DATE, TIME, CHANNEL, W, MODEL, attribution_root:Path, figure_log_root:Path, method_dir:str):
@@ -87,3 +87,13 @@ def read_filtering_result(figure_log_root, DATE, TIME, CHANNEL, W, MODEL, method
         return arr
     else:
         return None
+
+
+def load_road_mask(MASK_PATH):
+    # Load Road Mask
+    ROAD_MASK = True
+    if ROAD_MASK:
+        # Road Mask
+        road = pickle.load(open(MASK_PATH, "rb"))
+        road_ = np.pad(road, pad_width=((8, 9), (6, 6)))
+    return road_

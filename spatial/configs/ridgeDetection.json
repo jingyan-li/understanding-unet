@@ -1,0 +1,30 @@
+{
+    "path_to_file": "/Users/aaaje/Documents/ETH_WORK/interpretability/data_intermediate/attribution/resUnet/2019-07-01_144/2019-07-01_berlin_9ch144-saliency-target-channel1-W8_18.npy",
+    "mandatory_parameters": {
+        "Sigma": 3.39,
+        "Lower_Threshold": 0.34,
+        "Upper_Threshold": 1.02,
+        "Maximum_Line_Length": 0,
+        "Minimum_Line_Length": 0,
+        "Darkline": "LIGHT",
+        "Overlap_resolution": "NONE"
+    },
+
+    "optional_parameters": {
+        "Line_width": 10.0,
+        "High_contrast": 200,
+        "Low_contrast": 80
+    },
+
+    "further_options": {
+        "Correct_position": true,
+        "Estimate_width": true,
+        "doExtendLine": true,
+        "Show_junction_points": true,
+        "Show_IDs": false,
+        "Display_results": true,
+        "Preview": true,
+        "Make_Binary": false,
+        "save_on_disk": true
+    }
+}
