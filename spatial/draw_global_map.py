@@ -8,7 +8,7 @@ from utils.IO import read_filtering_result
 from utils.draw import generate_random_plot_colors, plot_attr_map
 
 
-def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_log_root):
+def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_log_root, visualize_norm):
     visualize_save_path = figure_log_root / f"{MODEL}" / f"{DATE}_{TIME}"
 
     # To store multiple watershed marker layers
@@ -18,25 +18,34 @@ def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_
     for i in tqdm(range(1, 22, 1)):
         for j in range(0, 22, 1):
             W = f"{i}_{j}"
-            arr = read_filtering_result(DATE, TIME, CHANNEL, W, MODEL, figure_log_root=figure_log_root, method=method)
+            arr = read_filtering_result(figure_log_root, DATE, TIME, CHANNEL, W, MODEL, method = method)
             if arr is None:
                 continue
-            markers = arr[..., 0]
-            attr_values = arr[..., 1]
-            markers_ = np.where((markers > 0) & (markers < 255), idx, 0)
-            #         markers = arr
-
-            # Filter out hotspots by attribution value
-            flat_channel = attr_values[markers_ == idx]
-            flat_channel = np.sort(flat_channel)
-            threshold = flat_channel[np.round(quantile * flat_channel.shape[0]).astype(int)]
-            if visualize_method == "exist":
-                markers_ = np.where(attr_values >= threshold, idx, 0)
-            elif visualize_method == "aggregate":
-                attr_values[attr_values < threshold] = 0
-                markers_ = attr_values
-            # Save
-            watershed_layer.append(markers_)
+            # ######### DATA PROCESSING
+            if method == "watershed":
+                markers = arr[..., 0]
+                attr_values = arr[..., 1]
+                markers_ = np.where((markers > 0) & (markers < 255), idx, 0)
+                #         markers = arr
+                # Filter out hotspots by attribution value
+                flat_channel = attr_values[markers_ == idx]
+                flat_channel = np.sort(flat_channel)
+                threshold = flat_channel[np.round(quantile * flat_channel.shape[0]).astype(int)]
+                if visualize_method == "exist":
+                    markers_ = np.where(attr_values >= threshold, idx, 0)
+                elif visualize_method == "aggregate":
+                    attr_values[attr_values < threshold] = 0
+                    markers_ = attr_values
+                # Save
+                watershed_layer.append(markers_)
+            elif method == "ridge":
+                # Filter out hotspots by attribution value
+                # print(arr.shape)
+                flat_channel = arr.flatten()
+                flat_channel = np.sort(flat_channel)
+                threshold = flat_channel[np.round(quantile * flat_channel.shape[0]).astype(int)]
+                arr[arr < threshold] = 0
+                watershed_layer.append(arr)
             idx += 1
     watershed_layer = np.array(watershed_layer)
     print(f"Loaded {len(watershed_layer)} in total")
@@ -61,7 +70,7 @@ def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_
         # Visualize the final image
         fig, ax = plt.subplots(1, 1, figsize=(15, 15))
         im = ax.imshow(dst)
-        ax.set_title(f"Watershed global map")
+        ax.set_title(f"{method} global map")
         plt.savefig(visualize_save_path/f"{method}_global.png")
         plt.show()
 
@@ -77,8 +86,8 @@ def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_
 
         # Plot
         fig, ax = plt.subplots(1, 1, figsize=(15, 15))
-        im = plot_attr_map(agg_layers, ax, cmap, norm="log")
-        ax.set_title("Global attribution map (filtered by watershed, aggregating sliding windows)")
+        im = plot_attr_map(agg_layers, ax, cmap, norm=visualize_norm)
+        ax.set_title(f"Global attribution map (filtered by {method}, aggregating sliding windows)")
         fig.colorbar(im, ax=ax, extend='max')
         plt.savefig(visualize_save_path/f"{method}_global_agg.png")
 
@@ -86,17 +95,18 @@ def main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_
 if __name__ == "__main__":
     # path
     figure_log_root = Path('/cluster/scratch/jingyli/interpretable/data_intermediate/visualization')
-
     MODEL = "resUnet"
     DATE = "2019-07-01"
     TIME = 144
     CHANNEL = 0
-    method = "watershed"  # "simpleThreshold"
+    method = "ridge"  # "simpleThreshold"  # "ridge"
 
-    visualize_method = "exist"  # "aggregate"
-    quantile = 0.75
+    visualize_method = "aggregate" # "exist"  # "aggregate"
+    quantile = 0.9
 
-    main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_log_root)
+    visualize_norm = None  # "log"
+
+    main(MODEL, DATE, TIME, CHANNEL, method, visualize_method, quantile, figure_log_root, visualize_norm)
 
 
 

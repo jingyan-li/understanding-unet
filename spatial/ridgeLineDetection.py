@@ -10,7 +10,7 @@ import numpy as np
 
 from utils.IO import get_space_mat, normalize_space_mat
 
-
+############ TODO: Bug not fixed
 def run():
     start=datetime.now()
     parser = ArgumentParser("ridge detection parser tool")

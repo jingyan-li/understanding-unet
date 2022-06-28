@@ -80,7 +80,7 @@ def log_scale(arr):
 
 
 def read_filtering_result(figure_log_root, DATE, TIME, CHANNEL, W, MODEL, method = "watershed"):
-    filename = f"{DATE}_{TIME}_C{CHANNEL}-W{W}.npy"
+    filename = f"{method}_{DATE}_{TIME}_C{CHANNEL}-W{W}.npy"
     filepath = figure_log_root / f"{MODEL}" / f"{DATE}_{TIME}" / method / filename
     if os.path.exists(filepath):
         arr = np.load(filepath)
